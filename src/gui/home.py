@@ -26,6 +26,12 @@ class HomeWidget(QWidget):
         self.header_layout.addWidget(self.lbl_title)
         self.header_layout.addWidget(self.btn_import)
         self.header_layout.addStretch()
+
+        self.btn_reset = QPushButton("⚠️ Réinitialiser")
+        self.btn_reset.setStyleSheet("background-color: #800; color: white;")
+        self.btn_reset.clicked.connect(self.do_reset)
+        self.header_layout.addWidget(self.btn_reset)
+
         self.header_layout.addWidget(self.lbl_money)
         self.layout.addLayout(self.header_layout)
 
@@ -165,6 +171,27 @@ class HomeWidget(QWidget):
                     # Re-add item
                     self.engine.buy_item('ability_copier', 0) # Hack to re-add
                     QMessageBox.warning(self, "Echec", msg)
+
+    def do_reset(self):
+        # Double Confirmation
+        reply = QMessageBox.warning(
+            self, "Réinitialiser",
+            "Attention ! Vous allez perdre TOUTES vos données. Continuer ?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            reply2 = QMessageBox.critical(
+                self, "Confirmation Finale",
+                "Êtes-vous vraiment sûr ? Cette action est irréversible.",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            )
+            if reply2 == QMessageBox.StandardButton.Yes:
+                self.engine.reset_game()
+                QMessageBox.information(self, "Reset", "Jeu réinitialisé. Relancez l'application pour recommencer.")
+                # Close app or Restart. Simpler to close.
+                # Or we can try to show IntroWindow again but that requires access to main stack or app.
+                import sys
+                sys.exit(0)
 
     def evolve_monster(self, monster):
         # Check conditions

@@ -7,11 +7,23 @@ from src.config import SECRET_KEY, BOSS_PROBABILITY, MAX_TEAM_SIZE
 from src.models import Monster, Ability
 from src.database import get_db_connection
 from src.ai_manager import AIManager
+from src.constants import get_type_multiplier
 
 class GameEngine:
     def __init__(self):
         self.ai = AIManager()
         self.db_conn = get_db_connection()
+
+    def reset_game(self):
+        """
+        Wipes data to restart.
+        """
+        cursor = self.db_conn.cursor()
+        cursor.execute("DELETE FROM monster_abilities")
+        cursor.execute("DELETE FROM monsters")
+        cursor.execute("DELETE FROM inventory")
+        cursor.execute("UPDATE player SET money = 1000 WHERE id = 1")
+        self.db_conn.commit()
 
     def get_player_team(self):
         """Returns list of Monster objects."""
@@ -186,7 +198,14 @@ class CombatSystem:
             cursor.execute("SELECT * FROM monsters ORDER BY RANDOM() LIMIT 1")
             row = cursor.fetchone()
             monster = Monster(dict(row))
-            monster.abilities = self.engine.get_monster_abilities(monster.id)
+
+            # CRITICAL: Create a NEW UUID for the encounter instance.
+            # If we don't, capturing it updates the original record (which might belong to the player).
+            import uuid
+            monster.uuid = str(uuid.uuid4())
+            monster.id = None # Ensure it's treated as new insertion
+
+            monster.abilities = self.engine.get_monster_abilities(row['id']) # Get abilities from original ID
 
             # Adjust level to the random encounter level
             # Rough scaling:
@@ -216,10 +235,17 @@ class CombatSystem:
         atk_stat = getattr(attacker, 'battle_attack', attacker.attack)
         def_stat = getattr(defender, 'battle_defense', defender.defense)
 
-        # Simple formula
-        # Damage = (Attack * Power / Defense) * Random(0.85, 1.0)
         power = ability.damage if ability else 50 # Default struggle move
-        damage = int((atk_stat * power / max(1, def_stat)) * random.uniform(0.85, 1.0))
+        move_type = ability.type if ability else "Normal"
+
+        # Type Multiplier
+        type_mult = get_type_multiplier(move_type, defender.type_1, defender.type_2)
+
+        # Damage Formula
+        # Damage = (Attack * Power / Defense) * TypeMult * Random(0.85, 1.0)
+        base_damage = (atk_stat * power / max(1, def_stat))
+        damage = int(base_damage * type_mult * random.uniform(0.85, 1.0))
+
         defender.current_hp = max(0, defender.current_hp - damage)
         return damage
 

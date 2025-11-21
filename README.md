@@ -5,9 +5,11 @@ Un jeu de capture de monstres généré par IA (Gemini), codé en Python avec Py
 ## Fonctionnalités
 
 *   **Génération Infinie :** Monstres, stats, images et capacités générés par Gemini.
-*   **Combat :** Système au tour par tour avec équipe de 3 monstres.
+*   **Combat :** Système au tour par tour avec équipe de 3 monstres et gestion des affinités de types.
+*   **Types & Stratégie :** 15 types (Eau, Feu, Espace, Temps, etc.) avec résistances et faiblesses.
 *   **Évolution :** Les monstres évoluent (Niveau 45, 90) en changeant d'apparence et de nom.
-*   **Boutique & Recrutement :** Achetez des objets (Balls, Potions) et recrutez des starters.
+*   **Boutique & Recrutement :** Achetez des objets (Balls, Potions, Boosts, Copieur de Capacité) et recrutez des starters.
+*   **Introduction :** Un assistant Robot vous guide au premier lancement pour choisir votre type de départ.
 *   **Échange :** Système d'échange sécurisé via code unique.
 
 ## Installation
@@ -27,7 +29,7 @@ Ce jeu nécessite une clé API Google Gemini.
     *   **Linux/Mac :** `export GEMINI_API_KEY="votre_cle"`
     *   **Windows :** `set GEMINI_API_KEY="votre_cle"`
 
-Ou modifiez directement `src/config.py` (déconseillé pour le partage).
+Ou modifiez directement `src/config.py`.
 
 ## Lancement
 
@@ -41,10 +43,10 @@ python3 main.py
 
 *   `src/ai_manager.py` : Gestion des appels à Gemini.
 *   `src/game_engine.py` : Logique du jeu (Combat, Stats, Inventaire).
+*   `src/constants.py` : Table des types et multiplicateurs de dégâts.
 *   `src/gui/` : Interface utilisateur (PyQt6).
 *   `data/` : Base de données SQLite locale.
-*   `assets/` : Images générées.
 
 ## Crédits
 
-Créé avec l'aide de l'IA. Utilisez Gemini 1.5 Flash ou Pro pour de meilleurs résultats.
+Créé avec l'aide de l'IA.
